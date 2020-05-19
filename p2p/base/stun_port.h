@@ -177,6 +177,9 @@ class UDPPort : public Port {
   // address shouldn't be used by any candidate.
   bool MaybeSetDefaultLocalAddress(rtc::SocketAddress* addr) const;
 
+  void set_network_token(const std::string& network_token)
+    { requests_.set_network_token(network_token); }
+
  private:
   // A helper class which can be called repeatedly to resolve multiple
   // addresses, as opposed to rtc::AsyncResolverInterface, which can only
@@ -274,6 +277,7 @@ class StunPort : public UDPPort {
       const std::string& password,
       const ServerAddresses& servers,
       const std::string& origin,
+      const std::string& network_token,
       absl::optional<int> stun_keepalive_interval);
 
   void PrepareAddress() override;
@@ -287,7 +291,8 @@ class StunPort : public UDPPort {
            const std::string& username,
            const std::string& password,
            const ServerAddresses& servers,
-           const std::string& origin);
+           const std::string& origin,
+           const std::string& network_token);
 };
 
 }  // namespace cricket

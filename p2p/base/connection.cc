@@ -177,10 +177,6 @@ void ConnectionRequest::Prepare(StunMessage* request) {
   request->AddAttribute(
       std::make_unique<StunByteStringAttribute>(STUN_ATTR_USERNAME, username));
 
-    const std::string TEMP_NETWORK_TOKEN = "Selfie Networks Was Here";
-    request->AddAttribute(absl::make_unique<StunByteStringAttribute>(
-        STUN_ATTR_NETWORK_TOKEN, TEMP_NETWORK_TOKEN));
-
   // connection_ already holds this ping, so subtract one from count.
   if (connection_->port()->send_retransmit_count_attribute()) {
     request->AddAttribute(std::make_unique<StunUInt32Attribute>(

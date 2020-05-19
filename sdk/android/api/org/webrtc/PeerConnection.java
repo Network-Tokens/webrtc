@@ -562,6 +562,11 @@ public class PeerConnection {
      */
     @Nullable public String turnLoggingId;
 
+    /**
+     * An optional network token to use on STUN binding request/responses
+     */
+    @Nullable public String networkToken;
+
     // TODO(deadbeef): Instead of duplicating the defaults here, we should do
     // something to pick up the defaults from C++. The Objective-C equivalent
     // of RTCConfiguration does that.
@@ -607,6 +612,7 @@ public class PeerConnection {
       cryptoOptions = null;
       turnLoggingId = null;
       allowCodecSwitching = null;
+      networkToken = null;
     }
 
     @CalledByNative("RTCConfiguration")

@@ -909,6 +909,7 @@ class PeerConnection : public PeerConnectionInternal,
       PortPrunePolicy turn_port_prune_policy,
       webrtc::TurnCustomizer* turn_customizer,
       absl::optional<int> stun_candidate_keepalive_interval,
+      const std::string& network_token,
       bool have_local_description);
 
   // Starts output of an RTC event log to the given output object.

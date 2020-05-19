@@ -71,3 +71,4 @@
 /xcodebuild
 /.vscode
 !webrtc/*
+tags

@@ -155,14 +155,15 @@ BasicPortAllocator::BasicPortAllocator(
     rtc::NetworkManager* network_manager,
     rtc::PacketSocketFactory* socket_factory,
     webrtc::TurnCustomizer* customizer,
-    RelayPortFactoryInterface* relay_port_factory)
+    RelayPortFactoryInterface* relay_port_factory,
+    const std::string& network_token)
     : network_manager_(network_manager), socket_factory_(socket_factory) {
   InitRelayPortFactory(relay_port_factory);
   RTC_DCHECK(relay_port_factory_ != nullptr);
   RTC_DCHECK(network_manager_ != nullptr);
   RTC_DCHECK(socket_factory_ != nullptr);
   SetConfiguration(ServerAddresses(), std::vector<RelayServerConfig>(), 0,
-                   webrtc::NO_PRUNE, customizer);
+                   webrtc::NO_PRUNE, customizer, absl::nullopt, network_token);
 }
 
 BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager)
@@ -173,19 +174,22 @@ BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager)
 }
 
 BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager,
-                                       const ServerAddresses& stun_servers)
+                                       const ServerAddresses& stun_servers,
+                                       const std::string& network_token)
     : BasicPortAllocator(network_manager,
                          /*socket_factory=*/nullptr,
-                         stun_servers) {}
+                         stun_servers,
+                         network_token) {}
 
 BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager,
                                        rtc::PacketSocketFactory* socket_factory,
-                                       const ServerAddresses& stun_servers)
+                                       const ServerAddresses& stun_servers,
+                                       const std::string& network_token)
     : network_manager_(network_manager), socket_factory_(socket_factory) {
   InitRelayPortFactory(nullptr);
   RTC_DCHECK(relay_port_factory_ != nullptr);
   SetConfiguration(stun_servers, std::vector<RelayServerConfig>(), 0,
-                   webrtc::NO_PRUNE, nullptr);
+                   webrtc::NO_PRUNE, nullptr, absl::nullopt, network_token);
 }
 
 void BasicPortAllocator::OnIceRegathering(PortAllocatorSession* session,
@@ -225,7 +229,7 @@ PortAllocatorSession* BasicPortAllocator::CreateSessionInternal(
     const std::string& ice_pwd) {
   CheckRunOnValidThreadAndInitialized();
   PortAllocatorSession* session = new BasicPortAllocatorSession(
-      this, content_name, component, ice_ufrag, ice_pwd);
+      this, content_name, component, ice_ufrag, ice_pwd, network_token());
   session->SignalIceRegathering.connect(this,
                                         &BasicPortAllocator::OnIceRegathering);
   return session;
@@ -236,7 +240,8 @@ void BasicPortAllocator::AddTurnServer(const RelayServerConfig& turn_server) {
   std::vector<RelayServerConfig> new_turn_servers = turn_servers();
   new_turn_servers.push_back(turn_server);
   SetConfiguration(stun_servers(), new_turn_servers, candidate_pool_size(),
-                   turn_port_prune_policy(), turn_customizer());
+                   turn_port_prune_policy(), turn_customizer(), absl::nullopt,
+                   network_token());
 }
 
 void BasicPortAllocator::InitRelayPortFactory(
@@ -255,11 +260,13 @@ BasicPortAllocatorSession::BasicPortAllocatorSession(
     const std::string& content_name,
     int component,
     const std::string& ice_ufrag,
-    const std::string& ice_pwd)
+    const std::string& ice_pwd,
+    const std::string& network_token)
     : PortAllocatorSession(content_name,
                            component,
                            ice_ufrag,
                            ice_pwd,
+                           network_token,
                            allocator->flags()),
       allocator_(allocator),
       network_thread_(rtc::Thread::Current()),
@@ -1471,7 +1478,7 @@ void AllocationSequence::CreateStunPorts() {
       session_->network_thread(), session_->socket_factory(), network_,
       session_->allocator()->min_port(), session_->allocator()->max_port(),
       session_->username(), session_->password(), config_->StunServers(),
-      session_->allocator()->origin(),
+      session_->allocator()->origin(), session_->allocator()->network_token(),
       session_->allocator()->stun_candidate_keepalive_interval());
   if (port) {
     session_->AddAllocatedPort(port.release(), this, true);

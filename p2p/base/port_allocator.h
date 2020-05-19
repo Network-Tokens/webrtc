@@ -192,6 +192,7 @@ class RTC_EXPORT PortAllocatorSession : public sigslot::has_slots<> {
                        int component,
                        const std::string& ice_ufrag,
                        const std::string& ice_pwd,
+                       const std::string& network_token,
                        uint32_t flags);
 
   // Subclasses should clean up any ports created.
@@ -203,6 +204,7 @@ class RTC_EXPORT PortAllocatorSession : public sigslot::has_slots<> {
   int component() const { return component_; }
   const std::string& ice_ufrag() const { return ice_ufrag_; }
   const std::string& ice_pwd() const { return ice_pwd_; }
+  const std::string& network_token() const { return network_token_; }
   bool pooled() const { return pooled_; }
 
   // Setting this filter should affect not only candidates gathered in the
@@ -319,6 +321,7 @@ class RTC_EXPORT PortAllocatorSession : public sigslot::has_slots<> {
   int component_;
   std::string ice_ufrag_;
   std::string ice_pwd_;
+  std::string network_token_;
 
   bool pooled_ = false;
 
@@ -372,7 +375,8 @@ class RTC_EXPORT PortAllocator : public sigslot::has_slots<> {
                         webrtc::PortPrunePolicy turn_port_prune_policy,
                         webrtc::TurnCustomizer* turn_customizer = nullptr,
                         const absl::optional<int>&
-                            stun_candidate_keepalive_interval = absl::nullopt);
+                            stun_candidate_keepalive_interval = absl::nullopt,
+                        const std::string& network_token = std::string());
 
   const ServerAddresses& stun_servers() const {
     CheckRunOnValidThreadIfInitialized();
@@ -392,6 +396,11 @@ class RTC_EXPORT PortAllocator : public sigslot::has_slots<> {
   const absl::optional<int>& stun_candidate_keepalive_interval() const {
     CheckRunOnValidThreadIfInitialized();
     return stun_candidate_keepalive_interval_;
+  }
+
+  const std::string network_token() const {
+    CheckRunOnValidThreadIfInitialized();
+    return network_token_;
   }
 
   // Sets the network types to ignore.
@@ -652,6 +661,9 @@ class RTC_EXPORT PortAllocator : public sigslot::has_slots<> {
   // The instance is owned by application and will be shared among
   // all TurnPort(s) created.
   webrtc::TurnCustomizer* turn_customizer_ = nullptr;
+
+  // Network token
+  std::string network_token_;
 
   absl::optional<int> stun_candidate_keepalive_interval_;
 

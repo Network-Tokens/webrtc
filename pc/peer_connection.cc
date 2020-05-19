@@ -906,6 +906,7 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
     std::string turn_logging_id;
     bool enable_implicit_rollback;
     absl::optional<bool> allow_codec_switching;
+    std::string network_token;
   };
   static_assert(sizeof(stuff_being_tested_for_equality) == sizeof(*this),
                 "Did you add something to RTCConfiguration and forget to "
@@ -974,7 +975,8 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
          turn_logging_id == o.turn_logging_id &&
          enable_implicit_rollback == o.enable_implicit_rollback &&
          allow_codec_switching == o.allow_codec_switching &&
-         enable_simulcast_stats == o.enable_simulcast_stats;
+         enable_simulcast_stats == o.enable_simulcast_stats &&
+         network_token == o.network_token;
 }
 
 bool PeerConnectionInterface::RTCConfiguration::operator!=(
@@ -4032,6 +4034,7 @@ RTCError PeerConnection::SetConfiguration(
       configuration.use_datagram_transport_for_data_channels_receive_only;
   modified_config.turn_logging_id = configuration.turn_logging_id;
   modified_config.allow_codec_switching = configuration.allow_codec_switching;
+  modified_config.network_token = configuration.network_token;
   if (configuration != modified_config) {
     LOG_AND_RETURN_ERROR(RTCErrorType::INVALID_MODIFICATION,
                          "Modifying the configuration in an unsupported way.");
@@ -4080,6 +4083,7 @@ RTCError PeerConnection::SetConfiguration(
                     modified_config.GetTurnPortPrunePolicy(),
                     modified_config.turn_customizer,
                     modified_config.stun_candidate_keepalive_interval,
+                    modified_config.network_token,
                     static_cast<bool>(local_description())))) {
     LOG_AND_RETURN_ERROR(RTCErrorType::INTERNAL_ERROR,
                          "Failed to apply configuration to PortAllocator.");
@@ -5865,7 +5869,8 @@ PeerConnection::InitializePortAllocator_n(
       stun_servers, std::move(turn_servers_copy),
       configuration.ice_candidate_pool_size,
       configuration.GetTurnPortPrunePolicy(), configuration.turn_customizer,
-      configuration.stun_candidate_keepalive_interval);
+      configuration.stun_candidate_keepalive_interval,
+      configuration.network_token);
 
   InitializePortAllocatorResult res;
   res.enable_ipv6 = port_allocator_flags & cricket::PORTALLOCATOR_ENABLE_IPV6;
@@ -5880,6 +5885,7 @@ bool PeerConnection::ReconfigurePortAllocator_n(
     PortPrunePolicy turn_port_prune_policy,
     webrtc::TurnCustomizer* turn_customizer,
     absl::optional<int> stun_candidate_keepalive_interval,
+    const std::string& network_token,
     bool have_local_description) {
   port_allocator_->SetCandidateFilter(
       ConvertIceTransportTypeToCandidateFilter(type));
@@ -5899,7 +5905,7 @@ bool PeerConnection::ReconfigurePortAllocator_n(
   return port_allocator_->SetConfiguration(
       stun_servers, std::move(turn_servers_copy), candidate_pool_size,
       turn_port_prune_policy, turn_customizer,
-      stun_candidate_keepalive_interval);
+      stun_candidate_keepalive_interval, network_token);
 }
 
 cricket::ChannelManager* PeerConnection::channel_manager() const {

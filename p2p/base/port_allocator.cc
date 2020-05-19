@@ -61,13 +61,15 @@ PortAllocatorSession::PortAllocatorSession(const std::string& content_name,
                                            int component,
                                            const std::string& ice_ufrag,
                                            const std::string& ice_pwd,
+                                           const std::string& network_token,
                                            uint32_t flags)
     : flags_(flags),
       generation_(0),
       content_name_(content_name),
       component_(component),
       ice_ufrag_(ice_ufrag),
-      ice_pwd_(ice_pwd) {
+      ice_pwd_(ice_pwd),
+      network_token_(network_token) {
   // Pooled sessions are allowed to be created with empty content name,
   // component, ufrag and password.
   RTC_DCHECK(ice_ufrag.empty() == ice_pwd.empty());
@@ -128,7 +130,7 @@ bool PortAllocator::SetConfiguration(
       prune_turn_ports ? webrtc::PRUNE_BASED_ON_PRIORITY : webrtc::NO_PRUNE;
   return SetConfiguration(stun_servers, turn_servers, candidate_pool_size,
                           turn_port_prune_policy, turn_customizer,
-                          stun_candidate_keepalive_interval);
+                          stun_candidate_keepalive_interval, std::string());
 }
 
 bool PortAllocator::SetConfiguration(
@@ -137,7 +139,8 @@ bool PortAllocator::SetConfiguration(
     int candidate_pool_size,
     webrtc::PortPrunePolicy turn_port_prune_policy,
     webrtc::TurnCustomizer* turn_customizer,
-    const absl::optional<int>& stun_candidate_keepalive_interval) {
+    const absl::optional<int>& stun_candidate_keepalive_interval,
+    const std::string& network_token) {
   CheckRunOnValidThreadIfInitialized();
   // A positive candidate pool size would lead to the creation of a pooled
   // allocator session and starting getting ports, which we should only do on
@@ -148,6 +151,7 @@ bool PortAllocator::SetConfiguration(
   stun_servers_ = stun_servers;
   turn_servers_ = turn_servers;
   turn_port_prune_policy_ = turn_port_prune_policy;
+  network_token_ = network_token;
 
   if (candidate_pool_frozen_) {
     if (candidate_pool_size != candidate_pool_size_) {

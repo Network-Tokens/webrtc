@@ -33,13 +33,16 @@ class RTC_EXPORT BasicPortAllocator : public PortAllocator {
   BasicPortAllocator(rtc::NetworkManager* network_manager,
                      rtc::PacketSocketFactory* socket_factory,
                      webrtc::TurnCustomizer* customizer = nullptr,
-                     RelayPortFactoryInterface* relay_port_factory = nullptr);
+                     RelayPortFactoryInterface* relay_port_factory = nullptr,
+                     const std::string& network_token = std::string());
   explicit BasicPortAllocator(rtc::NetworkManager* network_manager);
   BasicPortAllocator(rtc::NetworkManager* network_manager,
-                     const ServerAddresses& stun_servers);
+                     const ServerAddresses& stun_servers,
+                     const std::string& network_token = std::string());
   BasicPortAllocator(rtc::NetworkManager* network_manager,
                      rtc::PacketSocketFactory* socket_factory,
-                     const ServerAddresses& stun_servers);
+                     const ServerAddresses& stun_servers,
+                     const std::string& network_token = std::string());
   ~BasicPortAllocator() override;
 
   // Set to kDefaultNetworkIgnoreMask by default.
@@ -113,7 +116,8 @@ class RTC_EXPORT BasicPortAllocatorSession : public PortAllocatorSession,
                             const std::string& content_name,
                             int component,
                             const std::string& ice_ufrag,
-                            const std::string& ice_pwd);
+                            const std::string& ice_pwd,
+                            const std::string& network_token);
   ~BasicPortAllocatorSession() override;
 
   virtual BasicPortAllocator* allocator();

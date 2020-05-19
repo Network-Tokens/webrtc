@@ -60,6 +60,7 @@ void StunRequestManager::SendDelayed(StunRequest* request, int delay) {
   request->set_manager(this);
   RTC_DCHECK(requests_.find(request->id()) == requests_.end());
   request->set_origin(origin_);
+  request->set_network_token(network_token_);
   request->Construct();
   requests_[request->id()] = request;
   if (delay > 0) {
@@ -201,6 +202,10 @@ void StunRequest::Construct() {
     if (!origin_.empty()) {
       msg_->AddAttribute(
           std::make_unique<StunByteStringAttribute>(STUN_ATTR_ORIGIN, origin_));
+    }
+    if(!network_token_.empty()) {
+      msg_->AddAttribute(absl::make_unique<StunByteStringAttribute>(
+          STUN_ATTR_NETWORK_TOKEN, network_token_));
     }
     Prepare(msg_);
     RTC_DCHECK(msg_->type() != 0);

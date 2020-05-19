@@ -668,6 +668,9 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
 
     bool enable_simulcast_stats = true;
 
+    // Network token to use for outgoing STUN requests
+    std::string network_token;
+
     //
     // Don't forget to update operator== if adding something.
     //
