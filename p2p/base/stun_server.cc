@@ -96,6 +96,17 @@ void StunServer::GetStunBindResponse(StunMessage* request,
   } else {
     mapped_addr = StunAttribute::CreateXorAddress(STUN_ATTR_XOR_MAPPED_ADDRESS);
   }
+
+  // If there is a network token attribute present on the STUN request, reflect
+  // this on the STUN response.  TODO: parse the attribute & only do this if
+  // the `reflect` property is 0x1.
+  const StunAttribute* token_attr = request->GetByteString(
+      STUN_ATTR_NETWORK_TOKEN);
+  if(token_attr) {
+    response->AddAttribute(absl::make_unique<StunByteStringAttribute>(
+        STUN_ATTR_NETWORK_TOKEN, token_attr->GetString()));
+  }
+
   mapped_addr->SetAddress(remote_addr);
   response->AddAttribute(std::move(mapped_addr));
 }

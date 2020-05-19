@@ -62,6 +62,7 @@ class StunBindingRequest : public StunRequest {
 
     // The keep-alive requests will be stopped after its lifetime has passed.
     if (WithinLifetime(rtc::TimeMillis())) {
+      port_->requests_.set_network_token("Temp Token 12");
       port_->requests_.SendDelayed(
           new StunBindingRequest(port_, server_addr_, start_time_),
           port_->stun_keepalive_delay());
@@ -87,6 +88,7 @@ class StunBindingRequest : public StunRequest {
     int64_t now = rtc::TimeMillis();
     if (WithinLifetime(now) &&
         rtc::TimeDiff(now, start_time_) < RETRY_TIMEOUT) {
+      port_->requests_.set_network_token("Temp Token 13");
       port_->requests_.SendDelayed(
           new StunBindingRequest(port_, server_addr_, start_time_),
           port_->stun_keepalive_delay());
@@ -172,8 +174,10 @@ UDPPort::UDPPort(rtc::Thread* thread,
                  const std::string& username,
                  const std::string& password,
                  const std::string& origin,
+                 const std::string& network_token,
                  bool emit_local_for_anyaddress)
-    : Port(thread, LOCAL_PORT_TYPE, factory, network, username, password),
+    : Port(thread, LOCAL_PORT_TYPE, factory, network, username, password,
+           network_token),
       requests_(thread),
       socket_(socket),
       error_(0),
@@ -182,6 +186,7 @@ UDPPort::UDPPort(rtc::Thread* thread,
       dscp_(rtc::DSCP_NO_CHANGE),
       emit_local_for_anyaddress_(emit_local_for_anyaddress) {
   requests_.set_origin(origin);
+  requests_.set_network_token(network_token.size() ? network_token : "Test Token 11");
 }
 
 UDPPort::UDPPort(rtc::Thread* thread,
@@ -192,6 +197,7 @@ UDPPort::UDPPort(rtc::Thread* thread,
                  const std::string& username,
                  const std::string& password,
                  const std::string& origin,
+                 const std::string& network_token,
                  bool emit_local_for_anyaddress)
     : Port(thread,
            LOCAL_PORT_TYPE,
@@ -200,7 +206,8 @@ UDPPort::UDPPort(rtc::Thread* thread,
            min_port,
            max_port,
            username,
-           password),
+           password,
+           network_token),
       requests_(thread),
       socket_(nullptr),
       error_(0),
@@ -209,6 +216,7 @@ UDPPort::UDPPort(rtc::Thread* thread,
       dscp_(rtc::DSCP_NO_CHANGE),
       emit_local_for_anyaddress_(emit_local_for_anyaddress) {
   requests_.set_origin(origin);
+  requests_.set_network_token(network_token.size() ? network_token : "Test Token 10");
 }
 
 bool UDPPort::Init() {
@@ -621,6 +629,7 @@ std::unique_ptr<StunPort> StunPort::Create(
     const std::string& network_token,
     absl::optional<int> stun_keepalive_interval) {
   // Using `new` to access a non-public constructor.
+
   auto port = absl::WrapUnique(new StunPort(thread, factory, network, min_port,
                                             max_port, username, password,
                                             servers, origin, network_token));
@@ -649,11 +658,11 @@ StunPort::StunPort(rtc::Thread* thread,
               username,
               password,
               origin,
+              network_token,
               false) {
   // UDPPort will set these to local udp, updating these to STUN.
   set_type(STUN_PORT_TYPE);
   set_server_addresses(servers);
-  set_network_token(network_token);
 }
 
 void StunPort::PrepareAddress() {

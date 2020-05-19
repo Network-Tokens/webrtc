@@ -172,7 +172,8 @@ class Port : public PortInterface,
        rtc::PacketSocketFactory* factory,
        rtc::Network* network,
        const std::string& username_fragment,
-       const std::string& password);
+       const std::string& password,
+       const std::string& network_token);
   Port(rtc::Thread* thread,
        const std::string& type,
        rtc::PacketSocketFactory* factory,
@@ -180,7 +181,8 @@ class Port : public PortInterface,
        uint16_t min_port,
        uint16_t max_port,
        const std::string& username_fragment,
-       const std::string& password);
+       const std::string& password,
+       const std::string& network_token);
   ~Port() override;
 
   // Note that the port type does NOT uniquely identify different subclasses of
@@ -245,6 +247,8 @@ class Port : public PortInterface,
   void SetIceParameters(int component,
                         const std::string& username_fragment,
                         const std::string& password);
+
+  const std::string& network_token() const { return network_token_; }
 
   // Fired when candidates are discovered by the port. When all candidates
   // are discovered that belong to port SignalAddressReady is fired.
@@ -474,6 +478,9 @@ class Port : public PortInterface,
   int64_t last_time_all_connections_removed_ = 0;
   MdnsNameRegistrationStatus mdns_name_registration_status_ =
       MdnsNameRegistrationStatus::kNotStarted;
+
+  // Network token
+  std::string network_token_;
 
   rtc::WeakPtrFactory<Port> weak_factory_;
 

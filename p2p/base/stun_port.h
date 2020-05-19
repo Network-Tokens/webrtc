@@ -40,11 +40,13 @@ class UDPPort : public Port {
       const std::string& username,
       const std::string& password,
       const std::string& origin,
+      const std::string& network_token,
       bool emit_local_for_anyaddress,
       absl::optional<int> stun_keepalive_interval) {
     // Using `new` to access a non-public constructor.
     auto port = absl::WrapUnique(new UDPPort(thread, factory, network, socket,
                                              username, password, origin,
+                                             network_token,
                                              emit_local_for_anyaddress));
     port->set_stun_keepalive_delay(stun_keepalive_interval);
     if (!port->Init()) {
@@ -62,12 +64,14 @@ class UDPPort : public Port {
       const std::string& username,
       const std::string& password,
       const std::string& origin,
+      const std::string& network_token,
       bool emit_local_for_anyaddress,
       absl::optional<int> stun_keepalive_interval) {
     // Using `new` to access a non-public constructor.
     auto port = absl::WrapUnique(
         new UDPPort(thread, factory, network, min_port, max_port, username,
-                    password, origin, emit_local_for_anyaddress));
+                    password, origin, network_token,
+                    emit_local_for_anyaddress));
     port->set_stun_keepalive_delay(stun_keepalive_interval);
     if (!port->Init()) {
       return nullptr;
@@ -127,6 +131,7 @@ class UDPPort : public Port {
           const std::string& username,
           const std::string& password,
           const std::string& origin,
+          const std::string& network_token,
           bool emit_local_for_anyaddress);
 
   UDPPort(rtc::Thread* thread,
@@ -136,6 +141,7 @@ class UDPPort : public Port {
           const std::string& username,
           const std::string& password,
           const std::string& origin,
+          const std::string& network_token,
           bool emit_local_for_anyaddress);
 
   bool Init();
@@ -176,9 +182,6 @@ class UDPPort : public Port {
   // returning false, it indicates that the operation has failed and the
   // address shouldn't be used by any candidate.
   bool MaybeSetDefaultLocalAddress(rtc::SocketAddress* addr) const;
-
-  void set_network_token(const std::string& network_token)
-    { requests_.set_network_token(network_token); }
 
  private:
   // A helper class which can be called repeatedly to resolve multiple

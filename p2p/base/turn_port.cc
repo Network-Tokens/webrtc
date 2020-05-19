@@ -224,7 +224,8 @@ TurnPort::TurnPort(rtc::Thread* thread,
                    int server_priority,
                    const std::string& origin,
                    webrtc::TurnCustomizer* customizer)
-    : Port(thread, RELAY_PORT_TYPE, factory, network, username, password),
+    : Port(thread, RELAY_PORT_TYPE, factory, network, username, password,
+           std::string()),
       server_address_(server_address),
       tls_cert_verifier_(nullptr),
       credentials_(credentials),
@@ -240,6 +241,7 @@ TurnPort::TurnPort(rtc::Thread* thread,
       turn_customizer_(customizer) {
   request_manager_.SignalSendPacket.connect(this, &TurnPort::OnSendStunPacket);
   request_manager_.set_origin(origin);
+  request_manager_.set_network_token("turn port ctor 1");
 }
 
 TurnPort::TurnPort(rtc::Thread* thread,
@@ -264,7 +266,8 @@ TurnPort::TurnPort(rtc::Thread* thread,
            min_port,
            max_port,
            username,
-           password),
+           password,
+           std::string()),
       server_address_(server_address),
       tls_alpn_protocols_(tls_alpn_protocols),
       tls_elliptic_curves_(tls_elliptic_curves),
@@ -282,6 +285,7 @@ TurnPort::TurnPort(rtc::Thread* thread,
       turn_customizer_(customizer) {
   request_manager_.SignalSendPacket.connect(this, &TurnPort::OnSendStunPacket);
   request_manager_.set_origin(origin);
+  request_manager_.set_network_token("turn port ctor 2");
 }
 
 TurnPort::~TurnPort() {

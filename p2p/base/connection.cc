@@ -309,6 +309,7 @@ Connection::Connection(Port* port,
   // TODO(mallinath) - Start connections from STATE_FROZEN.
   // Wire up to send stun packets
   requests_.SignalSendPacket.connect(this, &Connection::OnSendStunPacket);
+  requests_.set_network_token(port_->network_token());
   RTC_LOG(LS_INFO) << ToString() << ": Connection created";
 }
 
