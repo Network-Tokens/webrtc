@@ -1,0 +1,25 @@
+# Network Tokens @ STUN
+
+This feature branch adds Network Token support to the WebRTC framework using
+the STUN protocol.
+
+## Usage
+
+In order to use a network token on an RTP connection, the `network_token` field
+on the RTCConfiguration class must be set.  This token will be attached as an
+attribute to outgoing STUN binding requests, and will be reflected back if
+specified by the token in the STUN binding response.
+
+Assuming getLowLatencyToken() will return a valid token usable for
+a low-latency data path via some out of band mechanism, an example of how to
+use a network token from the JavaScript API could be as follows:
+
+    var lowLatencyToken = getLowLatencyToken()
+
+    const config = {
+      iceServers: [{
+        urls: 'stun:stun.l.google.com:19302'
+      }],
+      networkToken: lowLatencyToken
+    };
+    const pc = new RTCPeerConnection(config);
