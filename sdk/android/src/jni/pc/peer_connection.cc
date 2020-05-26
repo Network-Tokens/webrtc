@@ -280,6 +280,12 @@ void JavaToNativeRTCConfiguration(
   if (!IsNull(jni, j_turn_logging_id)) {
     rtc_config->turn_logging_id = JavaToNativeString(jni, j_turn_logging_id);
   }
+
+  ScopedJavaLocalRef<jstring> j_network_token =
+      Java_RTCConfiguration_getNetworkToken(jni, j_rtc_config);
+  if (!IsNull(jni, j_network_token)) {
+    rtc_config->network_token = JavaToNativeString(jni, j_network_token);
+  }
 }
 
 rtc::KeyType GetRtcConfigKeyType(JNIEnv* env,

@@ -843,6 +843,12 @@ public class PeerConnection {
     String getTurnLoggingId() {
       return turnLoggingId;
     }
+
+    @Nullable
+    @CalledByNative("RTCConfiguration")
+    String getNetworkToken() {
+      return networkToken;
+    }
   };
 
   private final List<MediaStream> localStreams = new ArrayList<>();
