@@ -5870,7 +5870,7 @@ PeerConnection::InitializePortAllocator_n(
       configuration.ice_candidate_pool_size,
       configuration.GetTurnPortPrunePolicy(), configuration.turn_customizer,
       configuration.stun_candidate_keepalive_interval,
-      configuration.network_token;
+      configuration.network_token);
 
   InitializePortAllocatorResult res;
   res.enable_ipv6 = port_allocator_flags & cricket::PORTALLOCATOR_ENABLE_IPV6;
