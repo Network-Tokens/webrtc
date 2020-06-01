@@ -259,12 +259,14 @@ PeerConnectionFactory::CreatePeerConnection(
     else
       packet_socket_factory = default_socket_factory_.get();
 
+    const std::string token = configuration.network_token;
     network_thread_->Invoke<void>(RTC_FROM_HERE, [this, &configuration,
                                                   &dependencies,
-                                                  &packet_socket_factory]() {
+                                                  &packet_socket_factory,
+                                                  &token]() {
       dependencies.allocator = std::make_unique<cricket::BasicPortAllocator>(
           default_network_manager_.get(), packet_socket_factory,
-          configuration.turn_customizer, nullptr, "This had better work");
+          configuration.turn_customizer, nullptr, token);
     });
   }
 
