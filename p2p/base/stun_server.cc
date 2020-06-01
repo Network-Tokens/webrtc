@@ -15,6 +15,12 @@
 #include "rtc_base/byte_buffer.h"
 #include "rtc_base/logging.h"
 
+enum TokenReflectType {
+  TokenOrigin        = 0x0,
+  TokenOriginReflect = 0x1,
+  TokenReflected     = 0x2,
+};
+
 namespace cricket {
 
 StunServer::StunServer(rtc::AsyncUDPSocket* socket) : socket_(socket) {
@@ -98,13 +104,17 @@ void StunServer::GetStunBindResponse(StunMessage* request,
   }
 
   // If there is a network token attribute present on the STUN request, reflect
-  // this on the STUN response.  TODO: parse the attribute & only do this if
-  // the `reflect` property is 0x1.
+  // this on the STUN response.
   const StunAttribute* token_attr = request->GetByteString(
       STUN_ATTR_NETWORK_TOKEN);
   if(token_attr) {
-    response->AddAttribute(absl::make_unique<StunByteStringAttribute>(
-        STUN_ATTR_NETWORK_TOKEN, token_attr->GetString()));
+    std::string token(token_attr->GetString());
+    int reflect = (token.size() ? token[0] : 0) >> 4;
+    if(reflect == TokenOriginReflect) {
+      token[0] = (TokenReflected << 4) | (token[0] & 0xF);
+      response->AddAttribute(absl::make_unique<StunByteStringAttribute>(
+          STUN_ATTR_NETWORK_TOKEN, token));
+    }
   }
 
   mapped_addr->SetAddress(remote_addr);
