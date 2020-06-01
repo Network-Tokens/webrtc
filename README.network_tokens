@@ -24,145 +24,23 @@ use a network token from the JavaScript API could be as follows:
     };
     const pc = new RTCPeerConnection(config);
 
+## Example Client
 
-## Integration with Jitsi
+To test network tokens, we have integrated a patched version of WebRTC with
+Jitsi Meet - an open-source voice, video & instant messaging application.  This
+build of Jitsi will include the example network token in outgoing STUN binding
+requests and will reflect tokens back in STUN binding responses.
 
-In order to use the modified version of WebRTC with Jitsi, a few things need
-rebuilt.  WebRTC needs to be built on Linux - we are using Ubuntu 18.04 LTS.
-We must use the script provided by react-native-webrtc to build, as this will
-take care of packaging universal binaries for each architecture.  The script
-also takes care of downloading any dependencies and all dependent submodules.
+The Jitsi Meet client with Network Token support is available for download
+here:
 
+    https://github.com/Network-Tokens/webrtc/releases/latest
 
-### Preparation
+To install, use ADB:
 
-* Create or prepare an Ubuntu 18.04 LTS VM
+    wget https://github.com/Network-Tokens/webrtc/releases/download/m80_selfie.1/JitsiMeet.apk
+    adb install JitsiMeet.apk
 
-### Compile WebRTC
-
-* Download the build script used by react-native-webrtc:
-
-      wget https://github.com/react-native-webrtc/react-native-webrtc/blob/master/tools/build-webrtc.py
-
-* Prepare the build by downloading all sources and dependencies:
-
-      mkdir -p build_webrtc
-      python build-webrtc.py --setup --android .
-
-* Fetch the Network Tokens branch
-
-      pushd build_webrtc/webrtc/android/src
-      git remote add network-tokens https://github.com/Network-Tokens/webrtc.git
-      git fetch network-tokens
-      git checkout network-tokens
-      popd
-
-* Run the build proper
-
-      python build-webrtc.py --build --android .
-
-* The resulting artifacts need to be used in the react-native-rtc build, so
-  copy them somewhere convenient:
-
-      cp build_webrtc/build/android/libjingle_peerconnection.so.jar ~
-      cp build_webrtc/build/android/libwebrtc.jar ~
-
-### Compile react-native-webrtc
-
-* Download the react-native-webrtc source:
-
-      git clone https://github.com/react-native-webrtc/react-native-webrtc.git
-
-* Copy the binaries from the webrtc build in:
-
-      cd react-native-webrtc/android/libs
-      cp ~/libwebrtc.jar .
-      cp ~/lib{jingle_peerconnection.so,webrtc}.jar .
-      git add .
-      git commit -am 'Use WebRTC library with network token support'
-
-* Push this somewhere that the Jitsi build can use (change the remote as
-  necessary):
-
-      git add remote network-tokens git@github.com:my-organization/react-native-webrtc.git
-      git push -u network-tokens master
-
-### Update lib-jitsi-meet
-
-lib-jitsi-meet contains the core of the Jitsi code.  We need to update the
-monitor class that creates the RTCPeerConfiguration, and add our token here:
-
-
-* Download the source:
-
-      git clone https://github.com/jitsi/lib-jitsi-meet.git
-
-* In modules/rttmonitor/rttmonitor.js around line 55:
-
-      this.pc = new RTCUtils.RTCPeerConnectionType(
-          {
-              'iceServers': iceServers
-          });
-
-  The network token should be specified in the RTCConfiguration object given to
-  the new peer connection.
-
-      this.pc = new RTCUtils.RTCPeerConnectionType(
-          {
-              'iceServers': iceServers,
-              'networkToken': 'Network Token'
-          });
-
-* As with react-native-webrtc, this will need to go somewhere the Jitsi Meet
-  build can see.  Push this too:
-
-      git add remote network-tokens git@github.com:my-organization/lib-jitsi-meet.git
-      git push -u network-tokens master
-
-### Update Jitsi Meet
-
-Jitsi Meet is the React Native application.  We need to rebuild this after
-updating package.lock to point to our updated repositories.
-
-* Download the source:
-
-    https://github.com/jitsi/jitsi-meet.git
-
-* Open package.json and update the relevant packages:
-
-      {
-        ...
-        'lib-jitsi-meet': 'https://github.com/my-organization/lib-jitsi-meet',
-        ...
-        'react-native-webrtc': 'https://github.com/my-organization/react-native-webrtc',
-        ...
-      }
-
-* Install the dependencies for the Android build:
-
-    npm install
-
-* Open the `android` directory in Android Studio
-
-* Build > Make Project
-
-* Build > Build Bundle(s) / APK(s) > Build APK(s)
-
-## Notes
-
-### Session-based tokens vs flow-based tokens
-
-As the network token is currently specified on the RTCConfiguration object, this
-applies to the lifetime of the RTCPeerConnection, which could be the entire
-session.
-
-This means all STUN requests made for the duration of the session will contain
-the same network token.  If this is undesirable, we can also provide the token
-during the addIceCandidate() call, allowing us to specify a different token for
-each flow.  This would be required for Trickle ICE if we have to establish a new
-peer connection, but the tokens have a short expiry.
-
-### iOS build
-
-The iOS build has not been tested and is missing some glue between the
-Objective-C runtime and the native WebRTC library.
+Any outgoing STUN binding requests will have an attached network token and any
+peer that joins the meeting with Network Token support will reflect the token
+back in the STUN binding response.
