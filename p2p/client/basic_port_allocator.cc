@@ -615,6 +615,7 @@ void BasicPortAllocatorSession::UpdateIceParametersInternal() {
   for (PortData& port : ports_) {
     port.port()->set_content_name(content_name());
     port.port()->SetIceParameters(component(), ice_ufrag(), ice_pwd());
+    port.port()->set_network_token(network_token());
   }
 }
 
@@ -1410,11 +1411,13 @@ void AllocationSequence::CreateUDPPorts() {
   std::unique_ptr<UDPPort> port;
   bool emit_local_candidate_for_anyaddress =
       !IsFlagSet(PORTALLOCATOR_DISABLE_DEFAULT_LOCAL_CANDIDATE);
+
+  const std::string token = session_->allocator()->network_token();
   if (IsFlagSet(PORTALLOCATOR_ENABLE_SHARED_SOCKET) && udp_socket_) {
     port = UDPPort::Create(
         session_->network_thread(), session_->socket_factory(), network_,
         udp_socket_.get(), session_->username(), session_->password(),
-        session_->allocator()->origin(), std::string(),
+        session_->allocator()->origin(), token,
         emit_local_candidate_for_anyaddress,
         session_->allocator()->stun_candidate_keepalive_interval());
   } else {
@@ -1422,7 +1425,7 @@ void AllocationSequence::CreateUDPPorts() {
         session_->network_thread(), session_->socket_factory(), network_,
         session_->allocator()->min_port(), session_->allocator()->max_port(),
         session_->username(), session_->password(),
-        session_->allocator()->origin(), std::string(),
+        session_->allocator()->origin(), token,
         emit_local_candidate_for_anyaddress,
         session_->allocator()->stun_candidate_keepalive_interval());
   }
@@ -1483,11 +1486,13 @@ void AllocationSequence::CreateStunPorts() {
     return;
   }
 
+  const std::string token = session_->allocator()->network_token();
+
   std::unique_ptr<StunPort> port = StunPort::Create(
       session_->network_thread(), session_->socket_factory(), network_,
       session_->allocator()->min_port(), session_->allocator()->max_port(),
       session_->username(), session_->password(), config_->StunServers(),
-      session_->allocator()->origin(), session_->allocator()->network_token(),
+      session_->allocator()->origin(), token,
       session_->allocator()->stun_candidate_keepalive_interval());
   if (port) {
     session_->AddAllocatedPort(port.release(), this, true);

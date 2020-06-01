@@ -204,7 +204,7 @@ class RTC_EXPORT PortAllocatorSession : public sigslot::has_slots<> {
   int component() const { return component_; }
   const std::string& ice_ufrag() const { return ice_ufrag_; }
   const std::string& ice_pwd() const { return ice_pwd_; }
-  const std::string& network_token() const { return network_token_; }
+  const std::string network_token() const { return network_token_; }
   bool pooled() const { return pooled_; }
 
   // Setting this filter should affect not only candidates gathered in the

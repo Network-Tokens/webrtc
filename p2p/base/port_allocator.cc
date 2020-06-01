@@ -271,7 +271,8 @@ PortAllocator::FindPooledSession(const IceParameters* ice_credentials) const {
   for (auto it = pooled_sessions_.begin(); it != pooled_sessions_.end(); ++it) {
     if (ice_credentials == nullptr ||
         ((*it)->ice_ufrag() == ice_credentials->ufrag &&
-         (*it)->ice_pwd() == ice_credentials->pwd)) {
+         (*it)->ice_pwd() == ice_credentials->pwd &&
+         (*it)->network_token() == network_token_)) {
       return it;
     }
   }

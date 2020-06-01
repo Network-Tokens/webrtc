@@ -249,6 +249,9 @@ class Port : public PortInterface,
                         const std::string& password);
 
   const std::string& network_token() const { return network_token_; }
+  void set_network_token(const std::string& token) {
+    network_token_ = token;
+  }
 
   // Fired when candidates are discovered by the port. When all candidates
   // are discovered that belong to port SignalAddressReady is fired.
