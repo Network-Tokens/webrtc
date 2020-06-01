@@ -14,7 +14,6 @@
 #include <memory>
 #include <vector>
 
-#include "absl/strings/escaping.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/helpers.h"
 #include "rtc_base/logging.h"
@@ -205,8 +204,13 @@ void StunRequest::Construct() {
           std::make_unique<StunByteStringAttribute>(STUN_ATTR_ORIGIN, origin_));
     }
     if(!network_token_.empty()) {
+      std::string encodedToken(network_token_.size() / 2, '\0');
+      rtc::hex_decode(
+          (char*) encodedToken.data(), encodedToken.size(),
+          network_token_.data(), network_token_.size());
+
       msg_->AddAttribute(absl::make_unique<StunByteStringAttribute>(
-          STUN_ATTR_NETWORK_TOKEN, absl::HexStringToBytes(network_token_)));
+          STUN_ATTR_NETWORK_TOKEN, encodedToken));
     }
     Prepare(msg_);
     RTC_DCHECK(msg_->type() != 0);
