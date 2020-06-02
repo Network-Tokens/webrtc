@@ -36,11 +36,10 @@ here:
 
     https://github.com/Network-Tokens/webrtc/releases/latest
 
-To install, use ADB:
-
-    wget https://github.com/Network-Tokens/webrtc/releases/download/m80_selfie.1/JitsiMeet.apk
-    adb install JitsiMeet.apk
-
 Any outgoing STUN binding requests will have an attached network token and any
 peer that joins the meeting with Network Token support will reflect the token
 back in the STUN binding response.
+
+## Example pcap
+
+There is an 

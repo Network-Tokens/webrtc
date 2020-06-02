@@ -62,7 +62,6 @@ class StunBindingRequest : public StunRequest {
 
     // The keep-alive requests will be stopped after its lifetime has passed.
     if (WithinLifetime(rtc::TimeMillis())) {
-      port_->requests_.set_network_token("Temp Token 12");
       port_->requests_.SendDelayed(
           new StunBindingRequest(port_, server_addr_, start_time_),
           port_->stun_keepalive_delay());
@@ -88,7 +87,6 @@ class StunBindingRequest : public StunRequest {
     int64_t now = rtc::TimeMillis();
     if (WithinLifetime(now) &&
         rtc::TimeDiff(now, start_time_) < RETRY_TIMEOUT) {
-      port_->requests_.set_network_token("Temp Token 13");
       port_->requests_.SendDelayed(
           new StunBindingRequest(port_, server_addr_, start_time_),
           port_->stun_keepalive_delay());

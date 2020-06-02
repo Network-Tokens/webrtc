@@ -284,7 +284,6 @@ TurnPort::TurnPort(rtc::Thread* thread,
       turn_customizer_(customizer) {
   request_manager_.SignalSendPacket.connect(this, &TurnPort::OnSendStunPacket);
   request_manager_.set_origin(origin);
-  request_manager_.set_network_token("turn port ctor 2");
 }
 
 TurnPort::~TurnPort() {
