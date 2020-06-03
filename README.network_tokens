@@ -1,0 +1,51 @@
+# Network Tokens @ STUN
+
+This feature branch adds Network Token support to the WebRTC framework using
+the STUN protocol.
+
+## Usage
+
+In order to use a network token on an RTP connection, the `network_token` field
+on the RTCConfiguration class must be set.  This token will be attached as an
+attribute to outgoing STUN binding requests, and will be reflected back if
+specified by the token in the STUN binding response.
+
+Assuming getLowLatencyToken() will return a valid token usable for
+a low-latency data path via some out of band mechanism, an example of how to
+use a network token from the JavaScript API could be as follows:
+
+    var lowLatencyToken = getLowLatencyToken()
+
+    const config = {
+      iceServers: [{
+        urls: 'stun:stun.l.google.com:19302'
+      }],
+      networkToken: lowLatencyToken
+    };
+    const pc = new RTCPeerConnection(config);
+
+## Example Client
+
+To test network tokens, we have integrated a patched version of WebRTC with
+Jitsi Meet - an open-source voice, video & instant messaging application.  This
+build of Jitsi will include the example network token in outgoing STUN binding
+requests and will reflect tokens back in STUN binding responses.
+
+The Jitsi Meet client with Network Token support is available for download
+here:
+
+    https://github.com/Network-Tokens/webrtc/releases/latest
+
+Any outgoing STUN binding requests will have an attached network token and any
+peer that joins the meeting with Network Token support will reflect the token
+back in the STUN binding response.
+
+## Example pcap
+
+There is an example pcap available for download here:
+
+    https://github.com/Network-Tokens/webrtc/releases/download/m80_selfie.2/JitsiMeetCall.pcap
+
+This pcap contains a session between two peers.  The token is sent but is not
+reflected, because the call is connected via a proxy and the proxy does not
+have the modified version of WebRTC.
