@@ -42,4 +42,10 @@ back in the STUN binding response.
 
 ## Example pcap
 
-There is an 
+There is an example pcap available for download here:
+
+    https://github.com/Network-Tokens/webrtc/releases/download/m80_selfie.2/JitsiMeetCall.pcap
+
+This pcap contains a session between two peers.  The token is sent but is not
+reflected, because the call is connected via a proxy and the proxy does not
+have the modified version of WebRTC.
